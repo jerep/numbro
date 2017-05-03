@@ -574,11 +574,62 @@ exports.format = {
         test.done();
     },
 
+    formatForeignCurrency: function(test) {
+      var i;
+      var currentCulture = numbro.culture();
+
+      numbro.culture('test7', {
+          delimiters: {
+              thousands: ',',
+              decimal: '.'
+          },
+          abbreviations: {
+              thousand: 'k',
+              million: 'm',
+              billion: 'b',
+              trillion: 't'
+          },
+          currency: {
+              symbol: '$',
+              position: 'prefix',
+              spaceSeparated: true
+          },
+          foreignCurrencies: {
+              EUR: {
+                symbol: '€',
+                position: 'postfix',
+                spaceSeparated: true
+              }
+          },
+          defaults: {
+              currencyFormat: '(0.00a)'
+          }
+      });
+
+      numbro.culture('test7');
+
+      var tests = [
+          [100.23, '100.23 €'],
+          [100000.23, '100.00k €'],
+          [-100.23, '(100.23 €)']
+      ];
+
+      test.expect(tests.length);
+
+      for (i = 0; i < tests.length; i++) {
+          test.strictEqual(numbro(tests[i][0], 'EUR').formatCurrency(), tests[i][1], tests[i][1]);
+      }
+
+      numbro.culture(currentCulture);
+      test.done();
+
+    },
+
     escape: function (test) {
         var i;
         var currentCulture = numbro.culture();
 
-        numbro.culture('test7', {
+        numbro.culture('test8', {
             delimiters: {
                 thousands: ',',
                 decimal: '.'
@@ -598,7 +649,7 @@ exports.format = {
             }
         });
 
-        numbro.culture('test7');
+        numbro.culture('test8');
 
 
         var tests = [

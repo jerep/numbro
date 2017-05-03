@@ -73,8 +73,9 @@
 
 
     // Numbro prototype object
-    function Numbro(number) {
+    function Numbro(number, currencyCode) {
         this._value = number;
+        this._currencyCode = currencyCode;
     }
 
     function numberLength(number) {
@@ -277,14 +278,26 @@
             spliceIndex,
             output;
 
+        // Just ignore the currencySymbol here and get the currency data based on the
+        // currency code given to numbro().
+        var currency = cultures[currentCulture].currency;
+        if (n._currencyCode && n._currencyCode !== currency.code) {
+            if (cultures[currentCulture].foreignCurrencies) {
+                var foreignCurrency = cultures[currentCulture].foreignCurrencies[n._currencyCode];
+                if (foreignCurrency) {
+                    currency = foreignCurrency;
+                }
+            }
+        }
+
         if(format.indexOf('$') === -1){
             // Use defaults instead of the format provided
-            if (cultures[currentCulture].currency.position === 'infix') {
-                decimalSeparator = currencySymbol;
-                if (cultures[currentCulture].currency.spaceSeparated) {
+            if (currency.position === 'infix') {
+                decimalSeparator = currency.symbol;
+                if (currency.spaceSeparated) {
                     decimalSeparator = ' ' + decimalSeparator + ' ';
                 }
-            } else if (cultures[currentCulture].currency.spaceSeparated) {
+            } else if (currency.spaceSeparated) {
                 space = ' ';
             }
         } else {
@@ -305,14 +318,14 @@
 
         if (originalFormat.indexOf('$') === -1) {
             // Use defaults instead of the format provided
-            switch (cultures[currentCulture].currency.position) {
+            switch (currency.position) {
                 case 'postfix':
                     if (output.indexOf(')') > -1) {
                         output = output.split('');
-                        output.splice(-1, 0, space + currencySymbol);
+                        output.splice(-1, 0, space + currency.symbol);
                         output = output.join('');
                     } else {
-                        output = output + space + currencySymbol;
+                        output = output + space + currency.symbol;
                     }
                     break;
                 case 'infix':
@@ -322,10 +335,10 @@
                         output = output.split('');
                         spliceIndex = Math.max(openParenIndex, minusSignIndex) + 1;
 
-                        output.splice(spliceIndex, 0, currencySymbol + space);
+                        output.splice(spliceIndex, 0, currency.symbol + space);
                         output = output.join('');
                     } else {
-                        output = currencySymbol + space + output;
+                        output = currency.symbol + space + output;
                     }
                     break;
                 default:
@@ -341,18 +354,18 @@
                         // the symbol appears before the "(", "+" or "-"
                         spliceIndex = 0;
                     }
-                    output.splice(spliceIndex, 0, currencySymbol + space);
+                    output.splice(spliceIndex, 0, currency.symbol + space);
                     output = output.join('');
                 } else {
-                    output = currencySymbol + space + output;
+                    output = currency.symbol + space + output;
                 }
             } else {
                 if (output.indexOf(')') > -1) {
                     output = output.split('');
-                    output.splice(-1, 0, space + currencySymbol);
+                    output.splice(-1, 0, space + currency.symbol);
                     output = output.join('');
                 } else {
-                    output = output + space + currencySymbol;
+                    output = output + space + currency.symbol;
                 }
             }
         }
@@ -716,7 +729,7 @@
         Top Level Functions
     ************************************/
 
-    numbro = function(input) {
+    numbro = function(input, currencyCode) {
         if (numbro.isNumbro(input)) {
             input = input.value();
         } else if (typeof input === 'string' || typeof input === 'number') {
@@ -725,7 +738,7 @@
             input = NaN;
         }
 
-        return new Numbro(Number(input));
+        return new Numbro(Number(input), currencyCode);
     };
 
     // version number
